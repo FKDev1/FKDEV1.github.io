@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f3e8ff;
+            min-height: 100vh;
+            color: #635985;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .quiz-box {
+            background: #ffe2f6;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(99, 89, 133, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #fff1f9;
+            padding: 1.5rem;
+            box-shadow: -4px 0 16px rgba(99, 89, 133, 0.1);
+        }
+
+        .cats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Nowe style dla sidebar */
+        .cat-box {
+    aspect-ratio: 1;
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(99, 89, 133, 0.15);
+    transition: transform 0.3s, background-color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ececec; /* Szare tło dla zablokowanych kotków */
+}
+
+.cat-box.locked::before {
+    content: '?';
+    font-size: 3rem;
+    color: #635985;
+    font-weight: bold;
+    text-align: center;
+}
+
+.cat-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+}
+
+.cat-box:hover .cat-info {
+    opacity: 1;
+}
+
+.cat-box:hover {
+    transform: scale(1.05);
+}
+
+.cat-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Dodatkowy kontener dla nazwy kotka */
+.cat-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+}
+
+.cat-box:hover .cat-info {
+    opacity: 1;
+}
+
+/* Gradienty dla różnych poziomów rzadkości */
+.rarity-legendary {
+    border: 4px solid #ffd700; /* Złoty */
+}
+
+.rarity-epic {
+    border: 4px solid #9b59b6; /* Fioletowy */
+}
+
+.rarity-rare {
+    border: 4px solid #3498db; /* Niebieski */
+}
+
+.rarity-common {
+    border: 4px solid #2ecc71; /* Zielony */
+}
+
+/* Zmiana kolorystyki po najechaniu */
+.cat-box:hover .rarity-legendary {
+    background: linear-gradient(45deg, #ffd700, #ffcc00);
+}
+
+.cat-box:hover .rarity-epic {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+}
+
+.cat-box:hover .rarity-rare {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+.cat-box:hover .rarity-common {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+}
+
+
+
+        .title {
+            font-size: 2rem;
+            color: #443c68;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+        }
+
+        .start-btn {
+            background: #a594d9;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.25rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(99, 89, 133, 0.2);
+        }
+
+        .start-btn:hover {
+            background: #8675c4;
+            transform: translateY(-2px);
+        }
+
+        .question {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: #443c68;
+        }
+
+        .answers {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .answer-btn {
+            background: #fff1f9;
+            border: none;
+            padding: 1.5rem;
+            font-size: 2rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(99, 89, 133, 0.1);
+        }
+
+        .answer-btn:hover {
+            background: #ffd6ff;
+            transform: translateY(-2px);
+        }
+
+        .progress {
+            margin-top: 1.5rem;
+            color: #635985;
+            font-size: 1.1rem;
+        }
+
+        .result {
+            text-align: center;
+        }
+
+        .result img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 1rem auto;
+            display: block;
+            box-shadow: 0 8px 24px rgba(99, 89, 133, 0.2);
+        }
+
+        .result-name {
+            font-size: 1.75rem;
+            color: #443c68;
+            margin: 1rem 0;
+        }
+
+        .rarity-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            color: white;
+            margin: 1rem 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(99, 89, 133, 0.15);
+        }
+
+        .rarity-legendary { background: linear-gradient(45deg, #eeff6a, #e9de00); }
+        .rarity-epic { background: linear-gradient(45deg, #650270, #c490e4); }
+        .rarity-rare { background: linear-gradient(45deg, #6839f5, #2300af); }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="quiz-container">
+            <div class="quiz-box">
+                <div id="start-screen">
+                    <h1 class="title">Odkryj swojego śpiącego kotka</h1>
+                    <button class="start-btn" onclick="startQuiz()">Rozpocznij Quiz</button>
+                </div>
+
+                <div id="quiz-screen" class="hidden">
+                    <h2 id="question" class="question"></h2>
+                    <div id="answers" class="answers"></div>
+                    <div id="progress" class="progress"></div>
+                </div>
+
+                <div id="result-screen" class="hidden result">
+                    <h2 class="title">Twój śpiący kotek to:</h2>
+                    <img id="result-img" src="" alt="Twój kotek">
+                    <h3 id="result-name" class="result-name"></h3>
+                    <div id="result-rarity" class="rarity-badge"></div>
+                    <button class="start-btn" onclick="resetQuiz()">Spróbuj ponownie</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2 class="title">Odkryte Kotki</h2>
+            <div id="cats-grid" class="cats-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 'spanko',
+                text: 'Ile godzin dziennie lubisz spać?',
+                answers: [
+                    { emoji: '😐', text: '6h', score: 1 },
+                    { emoji: '😌', text: '8h', score: 2 },
+                    { emoji: '😴', text: '10h', score: 3 },
+                    { emoji: '🥱', text: '12h+', score: 4 }
+                ]
+            },
+            {
+                id: 'miejsce',
+                text: 'Gdzie najbardziej lubisz spać?',
+                answers: [
+                    { emoji: '🛏️', text: 'Łóżko', score: 1 },
+                    { emoji: '🛋️', text: 'Kanapa', score: 2 },
+                    { emoji: '☀️', text: 'Parapet', score: 3 },
+                    { emoji: '📦', text: 'Karton', score: 4 }
+                ]
+            },
+            {
+                id: 'drzemka',
+                text: 'Jak często robisz drzemki?',
+                answers: [
+                    { emoji: '🚫', text: 'Nigdy', score: 1 },
+                    { emoji: '📅', text: 'Czasami', score: 2 },
+                    { emoji: '😴', text: 'Codziennie', score: 3 },
+                    { emoji: '💤', text: 'Kilka razy dziennie', score: 4 }
+                ]
+            },
+            {
+                id: 'pobudka',
+                text: 'Jak reagujesz na pobudkę?',
+                answers: [
+                    { emoji: '⚡', text: 'Natychmiast wstaję', score: 1 },
+                    { emoji: '🙂', text: 'Powoli wstaję', score: 2 },
+                    { emoji: '😴', text: 'Jeszcze 5 minut...', score: 3 },
+                    { emoji: '💤', text: 'Śpię dalej', score: 4 }
+                ]
+            },
+            {
+                id: 'wieczor',
+                text: 'Kiedy chodzisz spać?',
+                answers: [
+                    { emoji: '🌆', text: '21:00', score: 1 },
+                    { emoji: '🌙', text: '23:00', score: 2 },
+                    { emoji: '🌝', text: '1:00', score: 3 },
+                    { emoji: '🌚', text: '3:00+', score: 4 }
+                ]
+            },
+            {
+                id: 'poduszki',
+                text: 'Ile poduszek potrzebujesz do snu?',
+                answers: [
+                    { emoji: '1️⃣', text: 'Jedna', score: 1 },
+                    { emoji: '2️⃣', text: 'Dwie', score: 2 },
+                    { emoji: '3️⃣', text: 'Trzy', score: 3 },
+                    { emoji: '🗑️', text: 'Cała góra', score: 4 }
+                ]
+            },
+            {
+                id: 'sniadanie',
+                text: 'Co robisz ze śniadaniem?',
+                answers: [
+                    { emoji: '🍳', text: 'Jem od razu', score: 1 },
+                    { emoji: '⏰', text: 'Po 30 min', score: 2 },
+                    { emoji: '😴', text: 'Śpię dalej', score: 3 },
+                    { emoji: '🌙', text: 'Jakie śniadanie?', score: 4 }
+                ]
+            }
+        ];
+
+        const cats = [
+            {
+                name: "Snuggles",
+                img: "Snuggles.png",
+                rarity: "legendary",
+                criteria: { spanko: 4, miejsce: 1, drzemka: 4, pobudka: 4, wieczor: 4, poduszki: 4, sniadanie: 4 }
+            },
+            {
+                name: "Eepy",
+                img: "eepy.gif",
+                rarity: "epic",
+                criteria: { spanko: 3, miejsce: 2, drzemka: 3, pobudka: 3, wieczor: 2, poduszki: 3, sniadanie: 3 }
+            },
+            {
+                name: "Ciężko Pracujący Eepy",
+                img: "eepyniemozespac.gif",
+                rarity: "epic",
+                criteria: { spanko: 3, miejsce: 1, drzemka: 2, pobudka: 1, wieczor: 1, poduszki: 2, sniadanie: 1 }
+            },
+            {
+                name: "Kosmiczny Eepy",
+                img: "eepykosmita.jpg",
+                rarity: "epic",
+                criteria: { spanko: 4, miejsce: 3, drzemka: 4, pobudka: 4, wieczor: 4, poduszki: 3, sniadanie: 4 }
+            },
+            {
+                name: "Eepy Poranny",
+                img: "eepyporanny.gif",
+                rarity: "rare",
+                criteria: { spanko: 2, miejsce: 1, drzemka: 1, pobudka: 1, wieczor: 1, poduszki: 2, sniadanie: 1 }
+            },
+            {
+                name: "Eepy Hello",
+                img: "efc.png",
+                rarity: "rare",
+                criteria: { spanko: 2, miejsce: 2, drzemka: 2, pobudka: 2, wieczor: 2, poduszki: 2, sniadanie: 2 }
+            },
+            // Nowe kotki
+            {
+                name: "Lord Dremington III",
+                img: "cat-hell.gif",
+                rarity: "legendary",
+                criteria: { spanko: 4, miejsce: 1, drzemka: 4, pobudka: 4, wieczor: 4, poduszki: 4, sniadanie: 2 }
+            },
+            {
+                name: "Księżniczka Śpiulka",
+                img: "eepypri.jpg",
+                rarity: "legendary",
+                criteria: { spanko: 4, miejsce: 2, drzemka: 3, pobudka: 3, wieczor: 1, poduszki: 4, sniadanie: 2 }
+            },
+            {
+                name: "Parapetowy Śpioch",
+                img: "cap.gif",
+                rarity: "epic",
+                criteria: { spanko: 3, miejsce: 3, drzemka: 3, pobudka: 3, wieczor: 2, poduszki: 2, sniadanie: 2 }
+            },
+            {
+                name: "Kartonowy Marzyciel",
+                img: "tt.gif",
+                rarity: "epic",
+                criteria: { spanko: 3, miejsce: 4, drzemka: 2, pobudka: 2, wieczor: 3, poduszki: 1, sniadanie: 3 }
+            },
+            {
+                name: "Nocny Mruk",
+                img: "nmc.gif",
+                rarity: "epic",
+                criteria: { spanko: 3, miejsce: 2, drzemka: 2, pobudka: 3, wieczor: 4, poduszki: 3, sniadanie: 4 }
+            },
+            {
+                name: "Kanapowy Leń",
+                img: "kapi.gif",
+                rarity: "rare",
+                criteria: { spanko: 2, miejsce: 2, drzemka: 2, pobudka: 2, wieczor: 2, poduszki: 3, sniadanie: 2 }
+            }
+          
+
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let unlockedCats = [];
+
+        // Load unlocked cats from localStorage
+        try {
+            const saved = localStorage.getItem('unlockedCats');
+            if (saved) {
+                unlockedCats = JSON.parse(saved);
+            }
+        } catch (error) {
+            console.error('Error loading unlocked cats:', error);
+        }
+
+        function updateCatsGrid() {
+    const grid = document.getElementById('cats-grid');
+    grid.innerHTML = '';
+
+    cats.forEach(cat => {
+        const isUnlocked = unlockedCats.includes(cat.name);
+        const div = document.createElement('div');
+        div.className = `cat-box ${isUnlocked ? `rarity-${cat.rarity}` : 'locked'}`;
+
+        // Tworzenie informacji o kotku
+        const info = document.createElement('div');
+        info.className = 'cat-info';
+        info.innerHTML = `<strong>${cat.name}</strong><br><span>${cat.rarity.charAt(0).toUpperCase() + cat.rarity.slice(1)}</span>`;
+
+        if (isUnlocked) {
+            div.innerHTML = `<img src="${cat.img}" alt="${cat.name}">`;
+            div.appendChild(info); // Dodajemy informacje o kotku
+        } else {
+            div.innerHTML = '?';
+        }
+
+        grid.appendChild(div);
+    });
+}
+
+
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            currentQuestion = 0;
+            answers = {};
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question').textContent = question.text;
+            
+            const answersDiv = document.getElementById('answers');
+            answersDiv.innerHTML = '';
+            
+            question.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.innerHTML = `${answer.emoji}<br>${answer.text}`;
+                button.onclick = () => handleAnswer(answer.score);
+                answersDiv.appendChild(button);
+            });
+
+            document.getElementById('progress').textContent = 
+                `Pytanie ${currentQuestion + 1} z ${questions.length}`;
+        }
+
+        function handleAnswer(score) {
+            answers[questions[currentQuestion].id] = score;
+
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function calculateResult() {
+            let bestMatch = cats[0];
+            let highestScore = -1;
+
+            for (let cat of cats) {
+                let score = 0;
+                let totalPossiblePoints = 0;
+
+                for (let [key, targetValue] of Object.entries(cat.criteria)) {
+                    if (answers[key] === targetValue) {
+                        score += 1;
+                    }
+                    totalPossiblePoints += 1;
+                }
+
+                const normalizedScore = (score / totalPossiblePoints) * 100;
+
+                if (normalizedScore > highestScore) {
+                    highestScore = normalizedScore;
+                    bestMatch = cat;
+                }
+            }
+
+            return bestMatch;
+        }
+
+        function showResult() {
+            const result = calculateResult();
+            
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('result-img').src = result.img;
+            document.getElementById('result-name').textContent = result.name;
+            
+            const rarityBadge = document.getElementById('result-rarity');
+            rarityBadge.textContent = result.rarity.toUpperCase();
+            rarityBadge.className = `rarity-badge rarity-${result.rarity}`;
+
+            if (!unlockedCats.includes(result.name)) {
+                unlockedCats.push(result.name);
+                try {
+                    localStorage.setItem('unlockedCats', JSON.stringify(unlockedCats));
+                } catch (error) {
+                    console.error('Error saving unlocked cats:', error);
+                }
+            }
+
+            updateCatsGrid();
+        }
+
+        function resetQuiz() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        // Initialize cats grid when page loads
+        updateCatsGrid();
+    </script>
+</body>
+</html>
